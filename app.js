@@ -1,24 +1,18 @@
-let grid = [];
 let gridSize = 20;
 
 function makeGrid() {
-  let count = 1;
   for (let i = 0; i < gridSize; i++) {
-    grid[i] = [];
     for (let j = 0; j < gridSize; j++) {
-      grid[i][j] = "cell";
-      $(".grid").append(`<div id="${i}${j}" class="cell"></div>`);
+      $(".grid").append(`<div id="${i}-${j}" class="cell"></div>`);
     }
   }
 }
 
-makeGrid();
-
 let snake = [[0, 0]];
 function renderSnake() {
   $(".grid div").removeClass("active");
-  snake.forEach((coordinate) => {
-    $(`#${coordinate[0]}${coordinate[1]}`).addClass("active");
+  snake.map((coordinate) => {
+    $(`#${coordinate[0]}-${coordinate[1]}`).addClass("active");
     // grid[coordinate[0]][coordinate[1]] = "S";
   });
 }
@@ -30,12 +24,13 @@ let RIGHT = [0, 1];
 let DIRECTION = RIGHT;
 
 function move(dir) {
-  snake[0][0] = snake[0][0] + dir[0];
-  snake[0][1] = snake[0][1] + dir[1];
-  //   snake.forEach((point) => {
-  //     point[0] = point[0] + dir[0];
-  //     point[1] = point[1] + dir[1];
-  //   });
+  // have to check the bounds of the container and coordinates
+
+  let newHead = [snake[0][0] + dir[0], snake[0][1] + dir[1]];
+  // check the new head coordinates to see if any number is out of bounds
+  // if need be, reset the newHead coordinates
+  snake.pop();
+  snake.unshift(newHead);
 }
 
 document.addEventListener("keydown", (e) => {
@@ -51,22 +46,11 @@ document.addEventListener("keydown", (e) => {
   console.log(DIRECTION);
 });
 
-// function renderToDom() {
-//   $(".grid div").removeClass("active");
-//   for (let i = 0; i < gridSize; i++) {
-//     for (let j = 0; j < gridSize; j++) {
-//       if (grid[i][j] === "S") {
-//         $(`#${i}${j}`).addClass("active");
-//       }
-//     }
-//   }
-// }
-
-makeGrid();
-
 function render() {
   move(DIRECTION);
   renderSnake();
 }
 
-// setInterval(render, 500);
+makeGrid();
+
+setInterval(render, 100);
