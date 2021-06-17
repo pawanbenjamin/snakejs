@@ -16,6 +16,10 @@ body {
   background-color: black;
 }
 
+.grid div.fruit {
+  background-color: red;
+}
+
 .cell {
   background-color: aqua;
 }
