@@ -13,7 +13,6 @@ function renderSnake() {
   $(".grid div").removeClass("active");
   snake.map((coordinate) => {
     $(`#${coordinate[0]}-${coordinate[1]}`).addClass("active");
-    // grid[coordinate[0]][coordinate[1]] = "S";
   });
 }
 
@@ -24,10 +23,8 @@ let RIGHT = [0, 1];
 let DIRECTION = RIGHT;
 
 function move(dir) {
-  // have to check the bounds of the container and coordinates
-
   let newHead = [snake[0][0] + dir[0], snake[0][1] + dir[1]];
-  // check the new head coordinates to see if any number is out of bounds
+
   if (newHead[0] < 0) {
     newHead[0] = gridSize - 1;
   }
@@ -40,7 +37,7 @@ function move(dir) {
   if (newHead[1] > gridSize - 1) {
     newHead[1] = 0;
   }
-  // if need be, reset the newHead coordinates
+
   snake.pop();
   snake.unshift(newHead);
 }
