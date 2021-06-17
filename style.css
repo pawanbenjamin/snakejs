@@ -1,0 +1,21 @@
+body {
+  display: flex;
+  justify-content: center;
+}
+
+.grid {
+  height: 400px;
+  width: 400px;
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  grid-template-rows: repeat(20, 1fr);
+  background-color: aqua;
+}
+
+.grid div.active {
+  background-color: black;
+}
+
+.cell {
+  background-color: aqua;
+}
