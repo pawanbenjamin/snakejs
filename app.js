@@ -8,7 +8,7 @@ let LEFT = [0, -1];
 let RIGHT = [0, 1];
 let DIRECTION = RIGHT;
 
-//Other Variables that we will us
+//Other Variables that we will use
 let score = 0;
 let highScore = 0;
 let fruitCoords = [9, 9];
