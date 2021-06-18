@@ -1,5 +1,16 @@
 let gridSize = 20;
 let score = 0;
+let UP = [-1, 0];
+let DOWN = [1, 0];
+let LEFT = [0, -1];
+let RIGHT = [0, 1];
+
+let state = {
+  snake: [[0, 0]],
+  DIRECTION: RIGHT,
+  fruitCoords: [9, 9],
+  gameState: "isPlaying",
+};
 
 function updateScore(score) {
   $(".score").text(score);
@@ -13,41 +24,50 @@ function makeGrid() {
   }
 }
 
-let snake = [[0, 0]];
+// let snake = [[0, 0]];
 function renderSnake() {
   $(".grid div").removeClass("active");
-  snake.map((coordinate) => {
+  state.snake.map((coordinate) => {
     $(`#${coordinate[0]}-${coordinate[1]}`).addClass("active");
   });
 }
 
-let UP = [-1, 0];
-let DOWN = [1, 0];
-let LEFT = [0, -1];
-let RIGHT = [0, 1];
-let DIRECTION = RIGHT;
+// let UP = [-1, 0];
+// let DOWN = [1, 0];
+// let LEFT = [0, -1];
+// let RIGHT = [0, 1];
+// let DIRECTION = RIGHT;
 
-let fruitCoords = [9, 9];
+// let fruitCoords = [9, 9];
 
-function renderFruit(fruitCoords) {
+function renderFruit(coords) {
   $(".grid div").removeClass("fruit");
-  $(`#${fruitCoords[0]}-${fruitCoords[1]}`).addClass("fruit");
+  $(`#${coords[0]}-${coords[1]}`).addClass("fruit");
 }
 
-function move(dir) {
-  let newHead = [snake[0][0] + dir[0], snake[0][1] + dir[1]];
+// function resetGame() {
+//   state.snake = [[0, 0]];
+//   state.DIRECTION = RIGHT;
+//   state.fruitCoords = [9, 9];
+//   score = 0;
+//   updateScore(score);
+//   clearInterval(stop);
+//   return;
+// }
 
-  snake.forEach((coord) => {
+function move(dir) {
+  let newHead = [state.snake[0][0] + dir[0], state.snake[0][1] + dir[1]];
+
+  state.snake.forEach((coord) => {
     if (newHead[0] === coord[0] && newHead[1] === coord[1]) {
       $(".grid div").removeClass("snake");
       $(".grid div").removeClass("fruit");
-      clearInterval(clearInt);
+      newHead = [0, 0];
+      state.snake = [[0, 0]];
+      state.DIRECTION = RIGHT;
+      state.fruitCoords = [9, 9];
       score = 0;
       updateScore(score);
-      snake = [[0, 0]];
-      fruitCoords = [9, 9];
-      render();
-      return;
     }
   });
 
@@ -64,47 +84,51 @@ function move(dir) {
     newHead[1] = 0;
   }
 
-  const [x, y] = fruitCoords;
+  const [x, y] = state.fruitCoords;
   if (newHead[0] === x && newHead[1] === y) {
     score++;
     updateScore(score);
-    fruitCoords = setNewFruit();
-    snake.unshift(newHead);
-    renderFruit(fruitCoords);
+    state.fruitCoords = setNewFruit();
+    state.snake.unshift(newHead);
+    renderFruit(state.fruitCoords);
   } else {
-    snake.pop();
-    snake.unshift(newHead);
+    state.snake.pop();
+    state.snake.unshift(newHead);
   }
 }
 
-document.addEventListener("keydown", (e) => {
-  if (e.code === "ArrowUp") {
-    DIRECTION = UP;
-  } else if (e.code === "ArrowRight") {
-    DIRECTION = RIGHT;
-  } else if (e.code === "ArrowDown") {
-    DIRECTION = DOWN;
-  } else if (e.code === "ArrowLeft") {
-    DIRECTION = LEFT;
-  }
-  console.log(DIRECTION);
-});
-
-function render() {
-  move(DIRECTION);
-  renderSnake();
-  renderFruit(fruitCoords);
-}
-
-makeGrid();
-let clearInt = setInterval(render, 100);
-
-document.getElementById("render").addEventListener("click", () => {
-  render();
-});
-
+//Helper Function
 function setNewFruit() {
   let newX = Math.floor(Math.random() * (gridSize - 1));
   let newY = Math.floor(Math.random() * gridSize);
   return [newX, newY];
 }
+
+document.addEventListener("keydown", (e) => {
+  if (e.code === "ArrowUp") {
+    state.DIRECTION = UP;
+  } else if (e.code === "ArrowRight") {
+    state.DIRECTION = RIGHT;
+  } else if (e.code === "ArrowDown") {
+    state.DIRECTION = DOWN;
+  } else if (e.code === "ArrowLeft") {
+    state.DIRECTION = LEFT;
+  }
+});
+
+function render() {
+  renderSnake();
+  move(state.DIRECTION);
+  renderFruit(state.fruitCoords);
+}
+
+makeGrid();
+let stop;
+
+stop = setInterval(render, 100);
+
+//start / test button
+document.getElementById("render").addEventListener("click", () => {
+  console.log(state);
+  render();
+});
