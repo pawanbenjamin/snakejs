@@ -9,6 +9,7 @@ let RIGHT = [0, 1];
 // Global Variable for stopping setInterval
 let stop;
 
+// Game State
 let state = {
   snake: [[0, 0]],
   DIRECTION: RIGHT,
@@ -82,7 +83,7 @@ function move(dir) {
 
 function setNewFruit() {
   let newX = Math.floor(Math.random() * (gridSize - 1));
-  let newY = Math.floor(Math.random() * gridSize);
+  let newY = Math.floor(Math.random() * (gridSize - 1));
   return [newX, newY];
 }
 
