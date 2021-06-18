@@ -23,3 +23,7 @@ body {
 .cell {
   background-color: aqua;
 }
+
+button {
+  height: 20px;
+}
