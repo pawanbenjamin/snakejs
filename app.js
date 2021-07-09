@@ -5,6 +5,8 @@ const logoutButton = document.getElementById('logout')
 
 
 
+
+
 signupForm.addEventListener('submit', async (e)=>{
 
   e.preventDefault()
@@ -34,40 +36,52 @@ signupForm.addEventListener('submit', async (e)=>{
 logoutButton.addEventListener('click', async ()=>{
   try{
     await auth.signOut()
-    location.reload()
   } catch(err){
     console.error(err)
   }
 })
 
-let currentUserId
+
+let userObj = {}
+
 // check if user is logged in 
 auth.onAuthStateChanged((user) => {
   if(user){
-    cuurentUserId = user.uid
-    console.log(user.uid)
+    const {email, uid} = user
+    userObj = { email, uid }
+    console.log(`Hello, ${email}`)
+    console.log(userObj)
+    // console.log(db.collection("users").doc(userObj.uid))
+
   } else {
-    alert('login session expired')
+    console.log('login session expired')
   }
 })
 
+
+async function getUserFromFirestore(uid){
+  let snapshot = await db.collection(`users`).doc(uid).get()
+  console.log(snapshot.data())
+}
+
+getUserFromFirestore(userObj.uid)
+
+
 let currUserDiv = $('#currentUser')
 let allUsersDiv = $('#allUsers')
-// listen for db changes
-// db.collection('users').get().then(snapshot=>{
-//   snapshot.docs.forEach(doc=>{
-//     let data = doc.data()
-//     console.log(data)
-//     console.log(auth)
-//     let userBlock = $(`<div><h1>${data.Name}</h1><h1 id="highScore">${data.HighScore}</h1></div>`)
-//     allUsersDiv.append(userBlock)
-//     if(data.Email === auth.currentUser.email){
-//       let userBlock = $(`<div><h1>${data.Name}</h1><h1>${data.HighScore}</h1></div>`)
-//       currUserDiv.append(userBlock)
-//     }
-//   })
-// })
 
+
+
+function renderJq(highScore, name, email){
+    let element = $(`
+      <div>
+        <h4>${name}</h4>
+        <h4>${email}</h4>
+        <h4>${highScore}</h4>       
+      </div>
+    `)
+return element
+}
 
 
 // Game Data
@@ -159,23 +173,16 @@ function setNewFruit() {
 }
 
 function updateScore(score) {
+//update({HighScore: score})
 
-  if(currentUserId !== undefined){
-    let userHighScore = $('#highSchore').val()
-    if(score > userHighScore){
-      // update the user high score in the database
-      db.collection('users').doc(currentUserId).update({
-        HighScore: score
-      })
-    }
-  }
+  db.collection("users").doc(userObj.uid).update({ HighScore: score})
 
   $(".score").text(score);
 
+  //check for our score
 
-      //check if our score is higher than currentUser's score
 
-      //if it is, updata it in our db
+
 }
 
 function render() {
@@ -186,6 +193,15 @@ function render() {
   } else {
     clearInterval(stop);
   }
+  db.collection('users').get().then(snapshot=>{
+    allUsersDiv.empty()
+    snapshot.docs.forEach(doc=>{
+      const {HighScore, Name, Email} = doc.data()
+      
+      allUsersDiv.append(renderJq(HighScore,Name,Email))
+  
+    })
+  })
 }
 
 document.addEventListener("keydown", (e) => {
