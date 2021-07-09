@@ -1,11 +1,15 @@
 // Firebase Login
 
 const signupForm = document.getElementById('signup-form')
+const logoutButton = document.getElementById('logout')
+
+
 
 signupForm.addEventListener('submit', async (e)=>{
 
-
   e.preventDefault()
+
+  //pulling these id's from the form elements
   const name = signupForm['name'].value
   const email = signupForm['email'].value
   const password = signupForm['password'].value
@@ -27,9 +31,18 @@ signupForm.addEventListener('submit', async (e)=>{
 
 })
 
+logoutButton.addEventListener('click', async ()=>{
+  try{
+    await auth.signOut()
+    location.reload()
+  } catch(err){
+    console.error(err)
+  }
+})
+
 let currentUserId
 // check if user is logged in 
-auth.onAuthStateChanged(async (user) => {
+auth.onAuthStateChanged((user) => {
   if(user){
     cuurentUserId = user.uid
     console.log(user.uid)
@@ -39,18 +52,21 @@ auth.onAuthStateChanged(async (user) => {
 })
 
 let currUserDiv = $('#currentUser')
+let allUsersDiv = $('#allUsers')
 // listen for db changes
-db.collection('users').get().then(snapshot=>{
-  snapshot.docs.forEach(doc=>{
-    let data = doc.data()
-    console.log(data)
-    console.log(auth)
-    if(data.Email === auth.currentUser.email){
-      let userBlock = $(`<div><h1>${data.Name}</h1><h1>${data.HighScore}</h1></div>`)
-      currUserDiv.append(userBlock)
-    }
-  })
-})
+// db.collection('users').get().then(snapshot=>{
+//   snapshot.docs.forEach(doc=>{
+//     let data = doc.data()
+//     console.log(data)
+//     console.log(auth)
+//     let userBlock = $(`<div><h1>${data.Name}</h1><h1 id="highScore">${data.HighScore}</h1></div>`)
+//     allUsersDiv.append(userBlock)
+//     if(data.Email === auth.currentUser.email){
+//       let userBlock = $(`<div><h1>${data.Name}</h1><h1>${data.HighScore}</h1></div>`)
+//       currUserDiv.append(userBlock)
+//     }
+//   })
+// })
 
 
 
@@ -100,14 +116,11 @@ function move(dir) {
     if (newHead[0] === coord[0] && newHead[1] === coord[1]) {
       $(".grid div").removeClass("snake");
       $(".grid div").removeClass("fruit");
-      // newHead = [0, 0];
-      // state.snake = [[0, 0]];
-      // state.DIRECTION = RIGHT;
-      // state.fruitCoords = [9, 9];
-      // score = 0;
-      // updateScore(score);
       state.gameState = "game-over";
       $(".game-over").text("GAME OVER");
+
+
+
     }
   });
 
@@ -128,6 +141,8 @@ function move(dir) {
   if (newHead[0] === x && newHead[1] === y) {
     score++;
     updateScore(score);
+
+
     state.fruitCoords = setNewFruit();
     state.snake.unshift(newHead);
     renderFruit(state.fruitCoords);
@@ -144,7 +159,23 @@ function setNewFruit() {
 }
 
 function updateScore(score) {
+
+  if(currentUserId !== undefined){
+    let userHighScore = $('#highSchore').val()
+    if(score > userHighScore){
+      // update the user high score in the database
+      db.collection('users').doc(currentUserId).update({
+        HighScore: score
+      })
+    }
+  }
+
   $(".score").text(score);
+
+
+      //check if our score is higher than currentUser's score
+
+      //if it is, updata it in our db
 }
 
 function render() {
