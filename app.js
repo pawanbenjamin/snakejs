@@ -1,3 +1,50 @@
+// Firebase Login
+
+const signupForm = document.getElementById('signup-form')
+
+signupForm.addEventListener('submit', async (e)=>{
+
+
+  e.preventDefault()
+  const name = signupForm['name'].value
+  const email = signupForm['email'].value
+  const password = signupForm['password'].value
+
+  signupForm.reset()
+
+  try {
+    let creds = await auth.createUserWithEmailAndPassword(email, password)
+    console.log(creds)
+    db.collection('users').doc(creds.user.uid).set({
+      Name: name,
+      Email: email,
+      HighScore: score > 0 ? score : 0,
+  })
+  console.log(`Added ${name} to the database!`)
+  } catch(err){
+    console.error(err)
+  }
+
+})
+
+let currentUserId
+// check if user is logged in 
+auth.onAuthStateChanged(async (user) => {
+  if(user){
+    cuurentUserId = user.uid
+    console.log(user.uid)
+  } else {
+    alert('login session expired')
+  }
+})
+
+// listen for db changes
+db.collectionGroup('users').onSnapshot(doc=>{
+  console.log(doc.data())
+})
+
+
+
 // Game Data
 let gridSize = 20;
 let score = 0;
@@ -44,12 +91,12 @@ function move(dir) {
     if (newHead[0] === coord[0] && newHead[1] === coord[1]) {
       $(".grid div").removeClass("snake");
       $(".grid div").removeClass("fruit");
-      newHead = [0, 0];
-      state.snake = [[0, 0]];
-      state.DIRECTION = RIGHT;
-      state.fruitCoords = [9, 9];
-      score = 0;
-      updateScore(score);
+      // newHead = [0, 0];
+      // state.snake = [[0, 0]];
+      // state.DIRECTION = RIGHT;
+      // state.fruitCoords = [9, 9];
+      // score = 0;
+      // updateScore(score);
       state.gameState = "game-over";
       $(".game-over").text("GAME OVER");
     }
@@ -114,6 +161,14 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.getElementById("render").addEventListener("click", () => {
+  if(state.gameState="game-over"){
+      newHead = [0, 0];
+      state.snake = [[0, 0]];
+      state.DIRECTION = RIGHT;
+      state.fruitCoords = [9, 9];
+      score = 0;
+      updateScore(score);
+  }
   state.gameState = "isPlaying";
   $(".game-over").text("Snakey Sssnake");
   stop = setInterval(render, 100);
