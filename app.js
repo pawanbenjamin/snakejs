@@ -20,7 +20,7 @@ signupForm.addEventListener('submit', async (e)=>{
       Email: email,
       HighScore: score > 0 ? score : 0,
   })
-  console.log(`Added ${name} to the database!`)
+    console.log(`Added ${name} to the database!`)
   } catch(err){
     console.error(err)
   }
@@ -38,9 +38,18 @@ auth.onAuthStateChanged(async (user) => {
   }
 })
 
+let currUserDiv = $('#currentUser')
 // listen for db changes
-db.collectionGroup('users').onSnapshot(doc=>{
-  console.log(doc.data())
+db.collection('users').get().then(snapshot=>{
+  snapshot.docs.forEach(doc=>{
+    let data = doc.data()
+    console.log(data)
+    console.log(auth)
+    if(data.Email === auth.currentUser.email){
+      let userBlock = $(`<div><h1>${data.Name}</h1><h1>${data.HighScore}</h1></div>`)
+      currUserDiv.append(userBlock)
+    }
+  })
 })
 
 
