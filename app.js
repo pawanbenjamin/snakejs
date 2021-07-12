@@ -45,15 +45,15 @@ logoutButton.addEventListener("click", async () => {
 let userObj = {};
 
 // check if user is logged in
-auth.onAuthStateChanged((user) => {
+auth.onAuthStateChanged(async (user) => {
   if (user) {
     const { email, uid } = user;
     userObj = { email, uid };
     console.log(`Hello, ${email}`);
     console.log("User Object within listener", userObj);
     // let stuff = db.collection("users").doc(userObj.uid);
-    getUserFromFirestore(userObj.uid);
-    console.log("Firestore Document:");
+    let data = await getUserFromFirestore(userObj.uid);
+    console.log("Firestore Document:", data);
   } else {
     console.log("login session expired");
   }
@@ -61,7 +61,7 @@ auth.onAuthStateChanged((user) => {
 
 async function getUserFromFirestore(uid) {
   let snapshot = await db.collection(`users`).doc(uid).get();
-  console.log(snapshot.data());
+  return snapshot.data();
 }
 
 // getUserFromFirestore(userObj.uid);
