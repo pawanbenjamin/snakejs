@@ -1,88 +1,84 @@
 // Firebase Login
 
-const signupForm = document.getElementById('signup-form')
-const logoutButton = document.getElementById('logout')
+const signupForm = document.getElementById("signup-form");
+const logoutButton = document.getElementById("logout");
 
+let currUserId;
 
-
-
-
-signupForm.addEventListener('submit', async (e)=>{
-
-  e.preventDefault()
+signupForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
   //pulling these id's from the form elements
-  const name = signupForm['name'].value
-  const email = signupForm['email'].value
-  const password = signupForm['password'].value
+  const name = signupForm["name"].value;
+  const email = signupForm["email"].value;
+  const password = signupForm["password"].value;
 
-  signupForm.reset()
+  signupForm.reset();
 
   try {
-    let creds = await auth.createUserWithEmailAndPassword(email, password)
-    console.log(creds)
-    db.collection('users').doc(creds.user.uid).set({
-      Name: name,
-      Email: email,
-      HighScore: score > 0 ? score : 0,
-  })
-    console.log(`Added ${name} to the database!`)
-  } catch(err){
-    console.error(err)
+    // Creating an authenticated user
+    let creds = await auth.createUserWithEmailAndPassword(email, password);
+    currUserId = creds.user.uid;
+    console.log(creds);
+    // Creating the same user in our database (Collection)
+    db.collection("users")
+      .doc(creds.user.uid)
+      .set({
+        Name: name,
+        Email: email,
+        HighScore: score > 0 ? score : 0,
+      });
+    console.log(`Added ${name} to the database!`);
+  } catch (err) {
+    console.error(err);
   }
+});
 
-})
-
-logoutButton.addEventListener('click', async ()=>{
-  try{
-    await auth.signOut()
-  } catch(err){
-    console.error(err)
+logoutButton.addEventListener("click", async () => {
+  try {
+    await auth.signOut();
+  } catch (err) {
+    console.error(err);
   }
-})
+});
 
+let userObj = {};
 
-let userObj = {}
-
-// check if user is logged in 
+// check if user is logged in
 auth.onAuthStateChanged((user) => {
-  if(user){
-    const {email, uid} = user
-    userObj = { email, uid }
-    console.log(`Hello, ${email}`)
-    console.log(userObj)
-    // console.log(db.collection("users").doc(userObj.uid))
-
+  if (user) {
+    const { email, uid } = user;
+    userObj = { email, uid };
+    console.log(`Hello, ${email}`);
+    console.log("User Object within listener", userObj);
+    // let stuff = db.collection("users").doc(userObj.uid);
+    getUserFromFirestore(userObj.uid);
+    console.log("Firestore Document:");
   } else {
-    console.log('login session expired')
+    console.log("login session expired");
   }
-})
+});
 
-
-async function getUserFromFirestore(uid){
-  let snapshot = await db.collection(`users`).doc(uid).get()
-  console.log(snapshot.data())
+async function getUserFromFirestore(uid) {
+  let snapshot = await db.collection(`users`).doc(uid).get();
+  console.log(snapshot.data());
 }
 
-getUserFromFirestore(userObj.uid)
+// getUserFromFirestore(userObj.uid);
 
+let currUserDiv = $("#currentUser");
+let allUsersDiv = $("#allUsers");
 
-let currUserDiv = $('#currentUser')
-let allUsersDiv = $('#allUsers')
-
-
-
-function renderJq(highScore, name, email){
-    let element = $(`
+function renderJq(highScore, name, email) {
+  let element = $(`
       <div>
         <h4>${name}</h4>
         <h4>${email}</h4>
         <h4>${highScore}</h4>       
       </div>
-    `)
-return element
+    `);
+  return element;
 }
-
 
 // Game Data
 let gridSize = 20;
@@ -132,9 +128,6 @@ function move(dir) {
       $(".grid div").removeClass("fruit");
       state.gameState = "game-over";
       $(".game-over").text("GAME OVER");
-
-
-
     }
   });
 
@@ -156,7 +149,6 @@ function move(dir) {
     score++;
     updateScore(score);
 
-
     state.fruitCoords = setNewFruit();
     state.snake.unshift(newHead);
     renderFruit(state.fruitCoords);
@@ -173,16 +165,13 @@ function setNewFruit() {
 }
 
 function updateScore(score) {
-//update({HighScore: score})
+  //update({HighScore: score})
 
-  db.collection("users").doc(userObj.uid).update({ HighScore: score})
+  db.collection("users").doc(userObj.uid).update({ HighScore: score });
 
   $(".score").text(score);
 
   //check for our score
-
-
-
 }
 
 function render() {
@@ -193,15 +182,16 @@ function render() {
   } else {
     clearInterval(stop);
   }
-  db.collection('users').get().then(snapshot=>{
-    allUsersDiv.empty()
-    snapshot.docs.forEach(doc=>{
-      const {HighScore, Name, Email} = doc.data()
-      
-      allUsersDiv.append(renderJq(HighScore,Name,Email))
-  
-    })
-  })
+  db.collection("users")
+    .get()
+    .then((snapshot) => {
+      allUsersDiv.empty();
+      snapshot.docs.forEach((doc) => {
+        const { HighScore, Name, Email } = doc.data();
+
+        allUsersDiv.append(renderJq(HighScore, Name, Email));
+      });
+    });
 }
 
 document.addEventListener("keydown", (e) => {
@@ -217,13 +207,13 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.getElementById("render").addEventListener("click", () => {
-  if(state.gameState="game-over"){
-      newHead = [0, 0];
-      state.snake = [[0, 0]];
-      state.DIRECTION = RIGHT;
-      state.fruitCoords = [9, 9];
-      score = 0;
-      updateScore(score);
+  if ((state.gameState = "game-over")) {
+    newHead = [0, 0];
+    state.snake = [[0, 0]];
+    state.DIRECTION = RIGHT;
+    state.fruitCoords = [9, 9];
+    score = 0;
+    updateScore(score);
   }
   state.gameState = "isPlaying";
   $(".game-over").text("Snakey Sssnake");
