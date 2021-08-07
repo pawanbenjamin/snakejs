@@ -2,6 +2,8 @@
 let currUserDiv = $("#currentUser");
 let allUsersDiv = $("#allUsers");
 
+const test = "test";
+
 const loginForm = document.getElementById("login-form");
 
 loginForm.addEventListener("submit", async (e) => {
