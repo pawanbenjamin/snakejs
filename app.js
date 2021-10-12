@@ -1,3 +1,13 @@
+// So I can use .forEach on elements
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
+NodeList.prototype.forEach = Array.prototype.forEach;
+
+// DOM Elements
+const grid = document.getElementsByClassName("grid")[0];
+const cells = document.getElementsByClassName("cell");
+const gameStatus = document.querySelector(".game-over");
+const scoreEl = document.querySelector(".score");
+
 // Game Data
 let gridSize = 20;
 let score = 0;
@@ -20,21 +30,28 @@ let state = {
 function makeGrid() {
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
-      $(".grid").append(`<div id="${i}-${j}" class="cell"></div>`);
+      let cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.id = `${i}-${j}`;
+      grid.appendChild(cell);
     }
   }
 }
 
 function renderSnake() {
-  $(".grid div").removeClass("active");
+  cells.forEach((el) => el.classList.remove("active"));
   state.snake.map((coordinate) => {
-    $(`#${coordinate[0]}-${coordinate[1]}`).addClass("active");
+    let snakeSquare = document.getElementById(
+      `${coordinate[0]}-${coordinate[1]}`
+    );
+    snakeSquare.classList.add("active");
   });
 }
 
 function renderFruit(coords) {
-  $(".grid div").removeClass("fruit");
-  $(`#${coords[0]}-${coords[1]}`).addClass("fruit");
+  cells.forEach((el) => el.classList.remove("fruit"));
+  let fruitSquare = document.getElementById(`${coords[0]}-${coords[1]}`);
+  fruitSquare.classList.add("fruit");
 }
 
 function move(dir) {
@@ -42,10 +59,10 @@ function move(dir) {
 
   state.snake.forEach((coord) => {
     if (newHead[0] === coord[0] && newHead[1] === coord[1]) {
-      $(".grid div").removeClass("snake");
-      $(".grid div").removeClass("fruit");
+      cells.forEach((el) => el.classList.remove("snake"));
+      cells.forEach((el) => el.classList.remove("fruit"));
       state.gameState = "game-over";
-      $(".game-over").text("GAME OVER");
+      gameStatus.innerText = "Game Over";
     }
   });
 
@@ -83,7 +100,7 @@ function setNewFruit() {
 }
 
 async function updateScore(score) {
-  $(".score").text(score);
+  scoreEl.innerText = score;
 }
 
 function render() {
@@ -119,7 +136,7 @@ document.getElementById("render").addEventListener("click", () => {
     updateScore(score);
   }
   state.gameState = "isPlaying";
-  $(".game-over").text("Snakey Sssnake");
+  gameStatus.innerText = "Snakey";
   stop = setInterval(render, 100);
 });
 
