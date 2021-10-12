@@ -108,7 +108,6 @@ function render() {
     renderSnake();
     move(state.DIRECTION);
     renderFruit(state.fruitCoords);
-    // renderPlayers();
   } else {
     clearInterval(stop);
   }
