@@ -3,6 +3,14 @@ body {
   justify-content: center;
 }
 
+.game-over {
+  width: 80px;
+}
+
+.score {
+  width: 80px;
+}
+
 .grid {
   height: 400px;
   width: 400px;

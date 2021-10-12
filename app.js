@@ -1,72 +1,12 @@
-// USER INFO AND ITEMS
-let currUserDiv = $("#currentUser");
-let allUsersDiv = $("#allUsers");
+// So I can use .forEach on elements
+HTMLCollection.prototype.forEach = Array.prototype.forEach;
+NodeList.prototype.forEach = Array.prototype.forEach;
 
-const test = "test";
-
-const loginForm = document.getElementById("login-form");
-
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const loginEmail = loginForm["login-email"].value;
-  const loginPassword = loginForm["login-password"].value;
-
-  try {
-    let creds = await auth.signInWithEmailAndPassword(
-      loginEmail,
-      loginPassword
-    );
-    console.log(creds, "Sucess");
-    // location = "index.html";
-  } catch (err) {
-    console.error(err);
-  }
-});
-
-const signupForm = document.getElementById("signup-form");
-const logoutButton = document.getElementById("logout");
-
-let currUserId;
-
-let userAuthObj = {};
-let userFirestoreData = {};
-
-// check if user is logged in
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    const { email, uid } = user;
-    userAuthObj = { email, uid };
-    console.log(`Hello, ${email}`);
-    console.log("User Object within listener", userAuthObj);
-
-    let data = await getUserFromFirestore(userAuthObj.uid);
-    userFirestoreData = data;
-    console.log("Firestore Snapshot:", userFirestoreData);
-    const { Name, Email, HighScore } = userFirestoreData;
-    // Append stuff to the dom with this data
-    // console.log(Name, Email, HighScore);
-    $("#current-user").empty();
-    $("#current-user").append(renderJq(HighScore, Name, Email));
-  } else {
-    console.log("login session expired");
-  }
-});
-
-async function getUserFromFirestore(uid) {
-  let snapshot = await db.collection(`users`).doc(uid).get();
-  return snapshot.data();
-}
-
-function renderJq(highScore, name, email) {
-  let element = $(`
-      <div>
-        <h4>${name}</h4>
-        <h4>${email}</h4>
-        <h4>${highScore}</h4>       
-      </div>
-    `);
-  return element;
-}
+// DOM Elements
+const grid = document.getElementsByClassName("grid")[0];
+const cells = document.getElementsByClassName("cell");
+const gameStatus = document.querySelector(".game-over");
+const scoreEl = document.querySelector(".score");
 
 // Game Data
 let gridSize = 20;
@@ -90,21 +30,28 @@ let state = {
 function makeGrid() {
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
-      $(".grid").append(`<div id="${i}-${j}" class="cell"></div>`);
+      let cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.id = `${i}-${j}`;
+      grid.appendChild(cell);
     }
   }
 }
 
 function renderSnake() {
-  $(".grid div").removeClass("active");
+  cells.forEach((el) => el.classList.remove("active"));
   state.snake.map((coordinate) => {
-    $(`#${coordinate[0]}-${coordinate[1]}`).addClass("active");
+    let snakeSquare = document.getElementById(
+      `${coordinate[0]}-${coordinate[1]}`
+    );
+    snakeSquare.classList.add("active");
   });
 }
 
 function renderFruit(coords) {
-  $(".grid div").removeClass("fruit");
-  $(`#${coords[0]}-${coords[1]}`).addClass("fruit");
+  cells.forEach((el) => el.classList.remove("fruit"));
+  let fruitSquare = document.getElementById(`${coords[0]}-${coords[1]}`);
+  fruitSquare.classList.add("fruit");
 }
 
 function move(dir) {
@@ -112,10 +59,10 @@ function move(dir) {
 
   state.snake.forEach((coord) => {
     if (newHead[0] === coord[0] && newHead[1] === coord[1]) {
-      $(".grid div").removeClass("snake");
-      $(".grid div").removeClass("fruit");
+      cells.forEach((el) => el.classList.remove("snake"));
+      cells.forEach((el) => el.classList.remove("fruit"));
       state.gameState = "game-over";
-      $(".game-over").text("GAME OVER");
+      gameStatus.innerText = "Game Over";
     }
   });
 
@@ -153,38 +100,8 @@ function setNewFruit() {
 }
 
 async function updateScore(score) {
-  if (userFirestoreData.Name && score > userFirestoreData.HighScore)
-    db.collection("users")
-      .doc(userAuthObj.uid)
-      .onSnapshot((doc) => {
-        let data = doc.data();
-        console.log("Current data: ", data);
-        if (data.HighScore <= score) {
-          db.collection("users")
-            .doc(userAuthObj.uid)
-            .update({ HighScore: score });
-        }
-      });
-
-  $(".score").text(score);
+  scoreEl.innerText = score;
 }
-
-// function renderPlayers() {
-//   db.collection("users")
-//     .get()
-//     .then((snapshot) => {
-//       allUsersDiv.empty();
-//       snapshot.docs.forEach((doc) => {
-//         const { HighScore, Name, Email } = doc.data();
-//         if (Email === userAuthObj.email) {
-//           console.log("in the if");
-//           $("#current-user").empty();
-//           $("#current-user").append(renderJq(HighScore, Name, Email));
-//         }
-//         allUsersDiv.append(renderJq(HighScore, Name, Email));
-//       });
-//     });
-// }
 
 function render() {
   if (state.gameState === "isPlaying") {
@@ -219,45 +136,8 @@ document.getElementById("render").addEventListener("click", () => {
     updateScore(score);
   }
   state.gameState = "isPlaying";
-  $(".game-over").text("Snakey Sssnake");
+  gameStatus.innerText = "Snakey";
   stop = setInterval(render, 100);
-});
-
-signupForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  //pulling these id's from the form elements
-  const name = signupForm["name"].value;
-  const email = signupForm["email"].value;
-  const password = signupForm["password"].value;
-
-  signupForm.reset();
-
-  try {
-    // Creating an authenticated user
-    let creds = await auth.createUserWithEmailAndPassword(email, password);
-    currUserId = creds.user.uid;
-    console.log(creds);
-    // Creating the same user in our database (Collection)
-    db.collection("users")
-      .doc(creds.user.uid)
-      .set({
-        Name: name,
-        Email: email,
-        HighScore: score > 0 ? score : 0,
-      });
-    console.log(`Added ${name} to the database!`);
-  } catch (err) {
-    console.error(err);
-  }
-});
-
-logoutButton.addEventListener("click", async () => {
-  try {
-    await auth.signOut();
-  } catch (err) {
-    console.error(err);
-  }
 });
 
 makeGrid();
