@@ -3,7 +3,7 @@ HTMLCollection.prototype.forEach = Array.prototype.forEach;
 NodeList.prototype.forEach = Array.prototype.forEach;
 
 // DOM Elements
-const grid = document.getElementsByClassName("grid")[0];
+const grid = document.querySelector(".grid");
 const cells = document.getElementsByClassName("cell");
 const gameStatus = document.querySelector(".game-over");
 const scoreEl = document.querySelector(".score");
